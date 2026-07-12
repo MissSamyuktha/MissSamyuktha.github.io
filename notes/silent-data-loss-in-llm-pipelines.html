@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The silent data loss bug | Samyuktha Kalivemula</title>
+  <meta name="description" content="How a correct prompt fix silently starved a downstream LLM pipeline: 23 attributes where thousands should have been, and the decoupling fix that got to 758.">
+  <meta name="author" content="Samyuktha Kalivemula">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="The silent data loss bug: 23 attributes where thousands should have been">
+  <meta property="og:description" content="How a correct prompt fix silently starved a downstream LLM pipeline, and why data-shaped coupling is the kind no diagram shows.">
+  <meta property="og:url" content="https://misssamyuktha.github.io/notes/silent-data-loss-in-llm-pipelines.html">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <nav class="nav scrolled">
+    <div class="nav-inner">
+      <a href="../" class="nav-logo">Sam<span class="accent">.</span></a>
+      <a href="../#notes" class="nav-back">&larr; All notes</a>
+    </div>
+  </nav>
+
+  <main class="article">
+    <p class="article-meta">Notes from my experiments &middot; July 2026 &middot; 4 min read</p>
+    <h1>The silent data loss bug: 23 attributes where thousands should have been</h1>
+    <p class="article-lede">A note from my experiments with LLM extraction pipelines. Names of internal tools omitted; the lesson is general.</p>
+
+    <h2>The setup</h2>
+    <p>
+      I have been experimenting with a pipeline that turns unstructured company documents (filings, news, patents)
+      into a knowledge graph. Two of its jobs matter for this story:
+    </p>
+    <ol>
+      <li><strong>Triple extraction</strong>: an LLM reads text chunks and emits relationship triples like <code>(Company A) -[ACQUIRED]-&gt; (Company B)</code>.</li>
+      <li><strong>Attribute extraction</strong>: a separate pass that captures financial and operational metrics (revenue, headcount, deliveries, capex) as attribute nodes.</li>
+    </ol>
+    <p>
+      Early versions of the triple extractor had a loose prompt. Among other sins, it emitted financial metrics
+      as triples: <code>(Tesla) -[reported]-&gt; ($97.7B revenue)</code>. That is bad modeling. A revenue figure is
+      not a relationship between two entities, and every downstream query has to special-case it. So when I did a
+      quality-first rewrite of the extraction prompt, one of the explicit new rules was:
+      <strong>do not extract financial metrics as triples. They belong to the attribute pipeline.</strong>
+    </p>
+    <p>The rewrite worked. Triple quality jumped dramatically. I moved on.</p>
+
+    <h2>The symptom</h2>
+    <p>
+      Weeks later, while checking the graph, I ran a count of attribute nodes for one company's full annual filing.
+      The answer was 23.
+    </p>
+    <p>
+      A 10-K filing is a couple hundred pages dense with numbers. The attribute taxonomy had 20+ types defined.
+      The expected volume was in the hundreds at minimum. 23 was not "the extractor is a bit conservative".
+      23 was "effectively nothing", quietly, with no errors logged anywhere. Every stage reported success.
+    </p>
+
+    <h2>The investigation</h2>
+    <p>
+      The attribute extractor's input was the thing I should have looked at first, but it took a while to get there,
+      because the coupling was invisible in the architecture diagram. On paper, triple extraction and attribute
+      extraction were independent stages.
+    </p>
+    <p>
+      In the code, they were not. The attribute extractor read the <code>source_sentence</code> field of
+      <strong>previously extracted triples</strong> and looked for financial metrics in those sentences. That design
+      had worked, but only by accident: the old, sloppy prompt emitted metric-shaped triples, so their source
+      sentences were full of numbers, and the attribute extractor had plenty to chew on.
+    </p>
+    <p>
+      When the prompt rewrite correctly stopped emitting financial metrics as triples, there were no more numeric
+      source sentences. The attribute extractor was still running, still succeeding, and receiving almost no input.
+      It had been silently depending on a side effect of bad extraction. Fixing the bug upstream starved the
+      pipeline downstream.
+    </p>
+
+    <h2>The fix</h2>
+    <p>
+      The fix was to make the architecture diagram true: decouple the two pipelines completely. The attribute
+      extractor now runs directly on the raw prefiltered text chunks, with no dependency on triple extraction at all.
+    </p>
+    <p>
+      Since running an LLM over every chunk just to find numbers is wasteful, a cheap deterministic regex prefilter
+      selects chunks that plausibly contain metrics before any LLM call: currency symbols, magnitude words like
+      "billion" and "million", percentages, large numbers, and metric keywords (revenue, EBITDA, headcount,
+      deliveries, and so on). Only those chunks go to the attribute extractor.
+    </p>
+    <pre><code>_NUMERIC = re.compile(
+    r'(\$|&euro;|&pound;|&yen;|CHF|USD|EUR|GBP|CNY)'
+    r'|\b\d[\d,]*\.?\d*\s*(billion|million|thousand|bn|mn|m|b)\b'
+    r'|\b\d+[\d,]*\s*%'
+    r'|\b(revenue|EBITDA|margin|profit|capex|headcount|deliveries)\b',
+    re.IGNORECASE,
+)
+
+numeric_chunks = [c for c in passed_chunks if _NUMERIC.search(c["text"])]
+attr_results = extract_attributes(numeric_chunks)</code></pre>
+    <p>
+      Result on the same filing: 23 attributes became 758. A 33x improvement from one architectural change,
+      with no new models and no prompt tuning.
+    </p>
+
+    <h2>What I took away from this</h2>
+    <p>
+      <strong>Pipelines coupled through data are still coupled.</strong> No import statement connected the two
+      extractors. The dependency lived in the shape of the data one stage happened to produce. Those are the
+      couplings that bite, because no diagram shows them.
+    </p>
+    <p>
+      <strong>Improving one component can starve another.</strong> The trigger for this bug was not a mistake.
+      It was a correct fix. If two stages share data and one of them gets better at its job, the contract between
+      them just changed, and nothing will tell you.
+    </p>
+    <p>
+      <strong>Silence is not success.</strong> Every stage returned green. The only signal was a number that was
+      implausibly low, and I only saw it because I happened to count. Since then I treat expected-volume checks
+      ("a 200-page filing should yield hundreds of attributes, alert if under 100") as part of the pipeline,
+      not as ad-hoc debugging.
+    </p>
+    <p>
+      <strong>Cheap deterministic filters earn their keep.</strong> A regex is not glamorous next to an LLM, but it
+      cut the candidate set drastically before any tokens were spent, and it is fully predictable. The best LLM
+      pipelines I have built so far are mostly deterministic plumbing with the LLM doing only the part nothing
+      else can do.
+    </p>
+
+    <div class="article-end">
+      <a href="../#notes">&larr; Back to all notes</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-social">
+        <a href="https://github.com/MissSamyuktha" target="_blank" rel="noopener">GitHub</a>
+        <span>&middot;</span>
+        <a href="https://www.linkedin.com/in/samyuktha-kalivemula/" target="_blank" rel="noopener">LinkedIn</a>
+        <span>&middot;</span>
+        <a href="mailto:samyukthakcontactinfo@gmail.com">Email</a>
+      </div>
+      <p>&copy; 2026 Samyuktha Kalivemula &middot; Hyderabad, India</p>
+    </div>
+  </footer>
+
+</body>
+</html>
