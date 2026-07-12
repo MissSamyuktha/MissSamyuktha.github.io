@@ -95,11 +95,14 @@
               validation layers, guardrails, and interfaces that real stakeholders can use, not just notebooks.
             </p>
           </div>
-          <aside class="about-facts">
-            <div class="fact"><span class="fact-num" data-count="6500" data-suffix="+">6,500+</span><span class="fact-label">knowledge-graph nodes in production</span></div>
-            <div class="fact"><span class="fact-num" data-count="20" data-suffix="+">20+</span><span class="fact-label">attributes extracted per company, evidence-backed</span></div>
-            <div class="fact"><span class="fact-num">hrs&nbsp;→&nbsp;10&nbsp;min</span><span class="fact-label">analyst research time per company</span></div>
-            <div class="fact"><span class="fact-num" data-count="22" data-suffix="">22</span><span class="fact-label">public projects on GitHub</span></div>
+          <aside class="explore-card reveal">
+            <h3>Currently exploring</h3>
+            <ul>
+              <li><span class="explore-name">GraphRAG query routing</span><span class="explore-desc">Natural language to Cypher, query decomposition, graph-grounded answers</span></li>
+              <li><span class="explore-name">Vision-based document KGs</span><span class="explore-desc">PDF pages to structured triples with page-level prefilters and batch inference</span></li>
+              <li><span class="explore-name">LLM extraction evaluation</span><span class="explore-desc">Error taxonomies and quality measurement for entity and relation extraction</span></li>
+              <li><span class="explore-name">Cost-tiered LLM pipelines</span><span class="explore-desc">Cheap prefilters and confidence-based escalation between model tiers</span></li>
+            </ul>
           </aside>
         </div>
       </div>
@@ -132,9 +135,9 @@
             <h4>GraphRAG Knowledge Graph</h4>
             <p class="xp-tagline">Multi-step agent for complex enterprise reasoning</p>
             <ul>
-              <li>Built a GraphRAG system (<strong>Neo4j + ChromaDB</strong>) with <strong>6,500+ nodes and 16,000+ relationships</strong>, outperforming standard RAG on multi-hop reasoning.</li>
-              <li>Designed a multi-agent orchestration pipeline with intelligent query routing: natural language → Cypher generation → graph traversal → decomposition → vector-RAG fallback.</li>
-              <li>Shipped a full-stack interface (<strong>Next.js + FastAPI</strong>) so non-technical users can query complex relational data in plain English.</li>
+              <li>Building a GraphRAG system (<strong>Neo4j + ChromaDB</strong>) with typed, evidence-linked relationships for multi-hop reasoning over enterprise data.</li>
+              <li>Designed a multi-agent orchestration pipeline with intelligent query routing: natural language → Cypher generation → graph traversal → decomposition and synthesis.</li>
+              <li>Built a full-stack interface (<strong>Next.js + FastAPI</strong>) so non-technical users can query complex relational data in plain English.</li>
             </ul>
           </div>
         </div>
