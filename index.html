@@ -45,7 +45,7 @@
   <header class="hero" id="top">
     <div class="hero-deco" aria-hidden="true"></div>
     <div class="container">
-      <p class="hero-badge reveal"><span class="pulse-dot"></span>Open to GenAI opportunities</p>
+      <p class="hero-badge reveal"><span class="pulse-dot"></span>Building reliable LLM systems</p>
       <p class="hero-eyebrow reveal">Hi, I'm</p>
       <h1 class="hero-name reveal">Samyuktha Kalivemula</h1>
       <h2 class="hero-title reveal">AI Engineer <span class="dot">·</span> GenAI Data Scientist</h2>
@@ -53,7 +53,7 @@
         I build <strong>production LLM systems</strong>: <span class="hl hl-blue">RAG pipelines</span>,
         <span class="hl hl-violet">knowledge graphs</span>, and <span class="hl hl-teal">autonomous agents</span>
         that turn messy unstructured data into answers people can trust.
-        From prompt engineering to deployed, monitored systems serving real users.
+        Lately, most of my time goes into making them reliable and measurable.
       </p>
       <div class="hero-actions reveal">
         <a class="btn btn-primary" href="#projects">See my work<span class="btn-arr">&rarr;</span></a>
@@ -80,9 +80,9 @@
         <div class="about-grid reveal">
           <div class="about-text">
             <p>
-              I'm a GenAI Data Scientist at <span class="hl hl-blue"><strong>GlobalData</strong></span> in Hyderabad, where I design and ship
-              LLM-powered systems end to end: crawling and structuring unstructured web data, building
-              knowledge graphs, and orchestrating multi-agent pipelines that non-technical analysts use every day.
+              I'm a GenAI Data Scientist at <span class="hl hl-blue"><strong>GlobalData</strong></span> in Hyderabad, where I lead an LLM pipeline that
+              turns unstructured pharma documents into cited, database-ready records. Before that I built a knowledge graph
+              Q&amp;A system and a web research agent.
             </p>
             <p>
               My path here wasn't the usual one: a Mechanical Engineering degree from
@@ -122,6 +122,17 @@
           </div>
 
           <div class="xp-project">
+            <h4>Pharma Unstructured-to-Structured Extraction <span class="xp-org">(leading, current)</span></h4>
+            <p class="xp-tagline">Pharma documents → cited, database-ready records</p>
+            <ul>
+              <li>Leading the build of an LLM pipeline that turns journal articles, press releases, regulatory news and SEC filings into structured records for GlobalData's <strong>clinical trial, pipeline drug and catalyst</strong> databases.</li>
+              <li>Every extracted value carries a <strong>citation to the exact span of source text</strong>; values are mapped to GlobalData's master taxonomies, and quality gates block bad output so only flagged exceptions go to a human reviewer.</li>
+              <li>Automatic source routing, vision only on pages that need it, and a self-correction pass, at roughly <strong>$0.20 to $0.25 per document</strong>.</li>
+              <li>Exposed through a versioned <strong>FastAPI</strong> contract used by the Software team; validated on held-out, unseen papers with zero blocking quality-gate violations.</li>
+            </ul>
+          </div>
+
+          <div class="xp-project">
             <h4>RAG-Based Vendor Intelligence Agent</h4>
             <p class="xp-tagline">Unstructured web data → structured enterprise knowledge</p>
             <ul>
@@ -133,12 +144,26 @@
           </div>
 
           <div class="xp-project">
-            <h4>GraphRAG Knowledge Graph</h4>
-            <p class="xp-tagline">Multi-step agent for complex enterprise reasoning</p>
+            <h4>Knowledge Graph Q&amp;A</h4>
+            <p class="xp-tagline">Any document in, plain-English answers out</p>
             <ul>
-              <li>Building a GraphRAG system (<strong>Neo4j + ChromaDB</strong>) with typed, evidence-linked relationships for multi-hop reasoning over enterprise data.</li>
-              <li>Designed a multi-agent orchestration pipeline with intelligent query routing: natural language → Cypher generation → graph traversal → decomposition and synthesis.</li>
-              <li>Built a full-stack interface (<strong>Next.js + FastAPI</strong>) so non-technical users can query complex relational data in plain English.</li>
+              <li>Built a pipeline that turns filings, news, patents, deals and web data into a <strong>Neo4j</strong> graph of relationships, financial facts and dated events, with every fact linked to the sentence it came from.</li>
+              <li>Plain-English question answering: natural language → Cypher → graph traversal, breaking complex questions into sub-questions when no direct path exists.</li>
+              <li>Full-stack interface (<strong>Next.js + FastAPI</strong>) and an extraction dashboard; the same pipeline was reused for corporate intelligence, pharma and consumer metrics.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="xp-card reveal" style="margin-top:1.5rem">
+          <div class="xp-head">
+            <div>
+              <h3>Design Engineer <span class="xp-org">@ Oceaneering International</span></h3>
+              <p class="xp-sub">Chandigarh, India</p>
+            </div>
+            <span class="xp-date">Jun 2019 to Nov 2019</span>
+          </div>
+          <div class="xp-project">
+            <ul>
+              <li>Designed subsea equipment and tooling for offshore oil and gas and marine applications using SolidWorks.</li>
             </ul>
           </div>
         </div>
@@ -271,7 +296,7 @@
           <div class="edu-card reveal">
             <h3>Post Graduate Program in AI &amp; Machine Learning</h3>
             <p class="edu-org">University of Texas, Austin (Online)</p>
-            <p class="edu-meta">Apr 2025 to Mar 2026 · GPA 4.06 / 4.33</p>
+            <p class="edu-meta">Apr 2025 to Mar 2026 · GPA 4.08 / 4.33</p>
           </div>
           <div class="edu-card reveal">
             <h3>B.Tech in Mechanical Engineering</h3>
@@ -291,8 +316,7 @@
       <div class="container">
         <h2 class="section-title reveal"><span class="section-num">07.</span> Get in Touch</h2>
         <p class="contact-blurb reveal">
-          I'm open to conversations about GenAI engineering roles, interesting agent/RAG problems,
-          and collaborations. The fastest way to reach me is email or LinkedIn.
+          I'm always happy to talk about LLM extraction, evaluation and knowledge graphs. The fastest way to reach me is email or LinkedIn.
         </p>
         <div class="contact-actions reveal">
           <a class="btn btn-primary" href="mailto:samyukthakcontactinfo@gmail.com">Say hello<span class="btn-arr">&rarr;</span></a>
